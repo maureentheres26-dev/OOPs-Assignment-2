@@ -1,0 +1,147 @@
+import java.util.*;
+
+public class LibraryManagement {
+
+    // List  -> all books in the library (keeps insertion order)
+    static List<Book> bookList = new ArrayList<>();
+    // Map   -> quick search of a book by its ID
+    static Map<Integer, Book> bookMap = new HashMap<>();
+    // Set   -> registered member IDs (no duplicates allowed)
+    static Set<Integer> members = new HashSet<>();
+    // Map of member -> books they have borrowed
+    static Map<Integer, List<Book>> borrowed = new HashMap<>();
+    // Queue -> students waiting for a book that is already issued
+    static Map<Integer, Queue<Integer>> waiting = new HashMap<>();
+
+    static void addBook(int id, String title, String author) {
+        Book b = new Book(id, title, author);
+        bookList.add(b);
+        bookMap.put(id, b);
+    }
+
+    static void registerMember(int memberId) {
+        if (members.add(memberId)) {
+            borrowed.put(memberId, new ArrayList<>());
+            System.out.println("Member " + memberId + " registered.");
+        } else {
+            System.out.println("Member " + memberId + " is already registered (Set ignored duplicate).");
+        }
+    }
+
+    static void issueBook(int memberId, int bookId) {
+        if (!members.contains(memberId)) {
+            System.out.println("Invalid member ID: " + memberId);
+            return;
+        }
+        Book b = bookMap.get(bookId);
+        if (b == null) {
+            System.out.println("Book ID " + bookId + " not found.");
+            return;
+        }
+        if (b.issued) {
+            System.out.println("'" + b.title + "' is already issued. Member " + memberId + " added to waiting queue.");
+            waiting.computeIfAbsent(bookId, k -> new LinkedList<>()).add(memberId);
+        } else {
+            b.issued = true;
+            borrowed.get(memberId).add(b);
+            System.out.println("'" + b.title + "' issued to member " + memberId);
+        }
+    }
+
+    static void returnBook(int memberId, int bookId) {
+        Book b = bookMap.get(bookId);
+        if (b == null || !members.contains(memberId) || !borrowed.get(memberId).contains(b)) {
+            System.out.println("Return failed: invalid details.");
+            return;
+        }
+        borrowed.get(memberId).remove(b);
+        b.issued = false;
+        System.out.println("'" + b.title + "' returned by member " + memberId);
+
+        // give it to the next person in the queue, if any
+        Queue<Integer> q = waiting.get(bookId);
+        if (q != null && !q.isEmpty()) {
+            int next = q.poll();
+            System.out.println("Next in queue is member " + next + ", issuing the book...");
+            issueBook(next, bookId);
+        }
+    }
+
+    static void searchByTitle(String key) {
+        System.out.println("Search results for \"" + key + "\":");
+        boolean found = false;
+        for (Book b : bookList) {
+            if (b.title.toLowerCase().contains(key.toLowerCase())) {
+                System.out.println("  " + b);
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("  No book found.");
+        }
+    }
+
+    static void displayBooks() {
+        System.out.println("\n--- Library Books ---");
+        for (Book b : bookList) {
+            System.out.println(b);
+        }
+    }
+
+    public static void main(String[] args) {
+        addBook(101, "Java Programming", "Herbert Schildt");
+        addBook(102, "Data Structures", "Seymour Lipschutz");
+        addBook(103, "Operating Systems", "Galvin");
+        addBook(104, "Computer Networks", "Tanenbaum");
+
+        registerMember(1);
+        registerMember(2);
+        registerMember(3);
+        registerMember(2);   // duplicate
+
+        displayBooks();
+
+        System.out.println();
+        issueBook(1, 101);
+        issueBook(2, 101);   // goes to queue
+        issueBook(3, 101);   // goes to queue
+        issueBook(5, 102);   // invalid member
+        issueBook(1, 999);   // invalid book
+
+        System.out.println();
+        searchByTitle("data");
+
+        System.out.println();
+        returnBook(1, 101);  // member 2 gets it automatically
+
+        displayBooks();
+
+        // sorting the list using Collections
+        Collections.sort(bookList, (a, b) -> a.title.compareTo(b.title));
+        System.out.println("\n--- Books sorted by title ---");
+        for (Book b : bookList) {
+            System.out.println(b);
+        }
+
+        System.out.println("\nTotal books : " + bookList.size());
+        System.out.println("Total members: " + members.size());
+    }
+}
+
+class Book {
+    int id;
+    String title;
+    String author;
+    boolean issued;
+
+    Book(int id, String title, String author) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.issued = false;
+    }
+
+    public String toString() {
+        return id + " | " + title + " | " + author + " | " + (issued ? "Issued" : "Available");
+    }
+}
