@@ -1,0 +1,174 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
+
+import java.io.File;
+
+// Poster on SDG 4 - Quality Education
+public class SDGPoster extends Application {
+
+    private Label infoLabel;
+    private ProgressBar progress;
+    private Label progressText;
+
+    @Override
+    public void start(Stage stage) {
+
+        // ---------- Header ----------
+        Label goalNo = new Label("4");
+        goalNo.setFont(Font.font("Arial", FontWeight.BOLD, 60));
+        goalNo.setTextFill(Color.WHITE);
+
+        Circle circle = new Circle(55, Color.web("#C5192D"));
+        StackPane badge = new StackPane(circle, goalNo);
+
+        Label title = new Label("SDG 4 : QUALITY EDUCATION");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 34));
+        title.setTextFill(Color.WHITE);
+
+        Label subtitle = new Label("Ensure inclusive and equitable quality education\nand promote lifelong learning for all");
+        subtitle.setFont(Font.font("Arial", 16));
+        subtitle.setTextFill(Color.WHITE);
+        subtitle.setTextAlignment(TextAlignment.LEFT);
+
+        VBox titleBox = new VBox(8, title, subtitle);
+        titleBox.setAlignment(Pos.CENTER_LEFT);
+
+        HBox header = new HBox(25, badge, titleBox);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(20));
+        header.setStyle("-fx-background-color: #C5192D;");
+
+        // optional picture - works only if sdg4.png is kept next to the program
+        File imgFile = new File("sdg4.png");
+        if (imgFile.exists()) {
+            ImageView iv = new ImageView(new Image(imgFile.toURI().toString()));
+            iv.setFitHeight(100);
+            iv.setPreserveRatio(true);
+            header.getChildren().add(iv);
+        }
+
+        // ---------- Facts section ----------
+        Label factHead = new Label("Why does it matter?");
+        factHead.setFont(Font.font("Arial", FontWeight.BOLD, 22));
+        factHead.setTextFill(Color.web("#C5192D"));
+
+        Label facts = new Label(
+                "- Millions of children are still out of school\n"
+              + "- Many students cannot read a simple text by age 10\n"
+              + "- Good education breaks the cycle of poverty\n"
+              + "- Teachers and digital tools are needed in every village");
+        facts.setFont(Font.font("Arial", 16));
+        facts.setWrapText(true);
+
+        VBox factBox = new VBox(10, factHead, facts);
+        factBox.setPadding(new Insets(15));
+        factBox.setStyle("-fx-background-color: #FDECEE; -fx-background-radius: 10;");
+
+        // ---------- Target buttons (event handling) ----------
+        Label targetHead = new Label("Click a target to know more");
+        targetHead.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+
+        Button b1 = makeButton("Free Primary & Secondary Education");
+        Button b2 = makeButton("Early Childhood Care");
+        Button b3 = makeButton("Affordable Technical Education");
+        Button b4 = makeButton("Equal Access for All");
+
+        infoLabel = new Label("Select any button above to see the details here.");
+        infoLabel.setFont(Font.font("Arial", 15));
+        infoLabel.setWrapText(true);
+        infoLabel.setMinHeight(70);
+        infoLabel.setPadding(new Insets(10));
+        infoLabel.setStyle("-fx-border-color: #C5192D; -fx-border-width: 2; -fx-background-color: white;");
+
+        b1.setOnAction(e -> showInfo("By 2030 every girl and boy should complete free, equitable and quality primary and secondary education.", 25));
+        b2.setOnAction(e -> showInfo("Every child should get quality early childhood development so that they are ready for primary school.", 50));
+        b3.setOnAction(e -> showInfo("Equal access to affordable technical, vocational and university education for women and men.", 75));
+        b4.setOnAction(e -> showInfo("Remove gender gaps and ensure access for the disabled, the poor and vulnerable groups.", 100));
+
+        Button reset = new Button("Reset");
+        reset.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14;");
+        reset.setOnAction(e -> {
+            infoLabel.setText("Select any button above to see the details here.");
+            progress.setProgress(0);
+            progressText.setText("Progress towards the goal: 0%");
+        });
+
+        HBox row1 = new HBox(10, b1, b2);
+        HBox row2 = new HBox(10, b3, b4);
+        row1.setAlignment(Pos.CENTER);
+        row2.setAlignment(Pos.CENTER);
+
+        progress = new ProgressBar(0);
+        progress.setPrefWidth(400);
+        progressText = new Label("Progress towards the goal: 0%");
+        progressText.setFont(Font.font("Arial", 14));
+
+        VBox targetBox = new VBox(12, targetHead, row1, row2, infoLabel, progressText, progress, reset);
+        targetBox.setAlignment(Pos.CENTER);
+        targetBox.setPadding(new Insets(15));
+
+        // ---------- Footer ----------
+        Label footer = new Label("\"Education is the most powerful weapon which you can use to change the world.\"  - Nelson Mandela");
+        footer.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        footer.setTextFill(Color.WHITE);
+        footer.setWrapText(true);
+        HBox footerBox = new HBox(footer);
+        footerBox.setAlignment(Pos.CENTER);
+        footerBox.setPadding(new Insets(12));
+        footerBox.setStyle("-fx-background-color: #333333;");
+
+        // ---------- Layout ----------
+        VBox centre = new VBox(15, factBox, targetBox);
+        centre.setPadding(new Insets(20));
+
+        BorderPane root = new BorderPane();
+        root.setTop(header);
+        root.setCenter(centre);
+        root.setBottom(footerBox);
+        root.setStyle("-fx-background-color: #FFFFFF;");
+
+        Scene scene = new Scene(root, 900, 700);
+        stage.setTitle("SDG 4 Poster - Quality Education");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private Button makeButton(String text) {
+        Button b = new Button(text);
+        b.setPrefWidth(280);
+        b.setStyle("-fx-background-color: #C5192D; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;");
+        b.setTooltip(new Tooltip("Click to read about: " + text));
+        // simple hover effect
+        b.setOnMouseEntered(e -> b.setStyle("-fx-background-color: #8F1020; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;"));
+        b.setOnMouseExited(e -> b.setStyle("-fx-background-color: #C5192D; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;"));
+        return b;
+    }
+
+    private void showInfo(String text, int percent) {
+        infoLabel.setText(text);
+        progress.setProgress(percent / 100.0);
+        progressText.setText("Progress towards the goal: " + percent + "%");
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
